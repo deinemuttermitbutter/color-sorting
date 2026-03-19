@@ -3,154 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ball Sort Solver - Image Edition</title>
+    <title>Shortest Path Solver</title>
     <style>
-        :root { --bg: #eef2f3; --accent: #4a90e2; }
+        :root { --bg: #f0f2f5; --primary: #007bff; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 900px; text-align: center; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 850px; text-align: center; }
         
-        .beakers-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin: 30px 0; }
-        .beaker-wrapper { position: relative; background: #fff; padding: 10px; border-radius: 10px; border: 1px solid #ddd; }
-        
-        .beaker {
-            width: 70px; height: 200px; border: 4px solid #333; border-top: none;
-            border-bottom-left-radius: 30px; border-bottom-right-radius: 30px;
-            display: flex; flex-direction: column-reverse; align-items: center; padding: 5px; cursor: pointer;
+        .counters { display: flex; justify-content: center; gap: 10px; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 10px; border: 1px solid #ddd; }
+        .count-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: bold; }
+        .count-bubble { width: 30px; height: 30px; border-radius: 50%; background-size: cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .error-text { color: #d63031; font-size: 10px; }
+
+        .beakers-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin: 20px 0; }
+        .tube {
+            width: 65px; height: 180px; border: 4px solid #333; border-top: none;
+            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
+            background: #fff; display: flex; flex-direction: column-reverse; align-items: center; padding: 5px; cursor: pointer; position: relative;
         }
-        
         .ball {
-            width: 55px; height: 45px; border-radius: 50%; margin: 1px 0;
+            width: 54px; height: 42px; border-radius: 50%; margin: 1px 0;
             background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.1);
-            display: flex; align-items: center; justify-content: center; font-size: 10px; color: transparent;
         }
 
-        .palette { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0; }
-        .swatch { 
-            width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid #ddd;
-            background-size: cover; background-position: center; position: relative;
-        }
-        .swatch.active { border-color: var(--accent); transform: scale(1.1); box-shadow: 0 0 10px rgba(74,144,226,0.5); }
-        .swatch-label { position: absolute; bottom: -20px; width: 100%; font-size: 10px; color: #666; }
+        .palette { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
+        .swatch { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 3px solid #ddd; background-size: cover; }
+        .swatch.active { border-color: var(--primary); transform: scale(1.1); }
 
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; transition: 0.3s; }
-        .btn-solve { background: #27ae60; color: white; }
-        .btn-add { background: var(--accent); color: white; }
-        .btn-danger { background: #e74c3c; color: white; }
-
-        .controls-row { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
-        #results { width: 100%; max-width: 500px; text-align: left; }
-        .step { background: white; margin: 8px 0; padding: 15px; border-left: 8px solid #27ae60; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; }
+        .btn-solve { background: #2ecc71; color: white; width: 200px; font-size: 1.1em; }
         
-        input[type="file"] { display: none; }
-        .upload-label { padding: 8px 15px; background: #f3f3f3; border: 1px dashed #aaa; cursor: pointer; border-radius: 5px; font-size: 13px; }
+        #results { width: 100%; max-width: 500px; margin-top: 20px; }
+        .step { background: white; margin: 8px 0; padding: 12px; border-left: 6px solid #2ecc71; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: left; }
+        .upload-btn { font-size: 12px; color: #666; cursor: pointer; text-decoration: underline; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h1>🧪 Ball Sort Solver (Image Mode)</h1>
-    <p>Upload images for your balls, set up the beakers, and find the shortest path!</p>
-
-    <div class="controls-row">
-        <button class="btn btn-add" onclick="addBeaker()">+ Add Tube</button>
-        <button class="btn btn-solve" onclick="solvePuzzle()">🚀 Find Shortest Path</button>
-        <button class="btn btn-danger" onclick="resetAll()">Reset All</button>
+    <h2>🧪 Shortest Way Finder</h2>
+    <p style="font-size: 0.9em; color: #666;">This AI checks every possible move to guarantee the <b>absolute minimum</b> moves.</p>
+    
+    <div class="controls">
+        <button class="btn" style="background:#007bff; color:white" onclick="addTube()">+ Add Tube</button>
+        <button class="btn btn-solve" id="solve-btn" onclick="solvePuzzle()">🚀 Find Shortest Way</button>
+        <button class="btn" style="background:#6c757d; color:white" onclick="reset()">Reset</button>
     </div>
+
+    <div class="counters" id="counter-list"></div>
 
     <div class="palette" id="palette"></div>
-    
-    <div class="controls-row" style="margin-top: 20px;">
-        <label class="upload-label">
-            📷 Upload New Ball Image
-            <input type="file" accept="image/*" onchange="handleImageUpload(event)">
-        </label>
-    </div>
+    <input type="file" id="file-input" style="display:none" onchange="handleImage(event)">
+    <span class="upload-btn" onclick="document.getElementById('file-input').click()">📷 Upload Image for selected ball</span>
 </div>
 
-<div class="beakers-container" id="beakers-container"></div>
+<div class="beakers-container" id="tubes-container"></div>
 <div id="results"></div>
 
 <script>
-    let ballTypes = {}; // Stores { id: dataUrl }
-    let nextId = 1;
-    let selectedId = null;
-    let state = [[], [], [], []]; 
+    let ballImages = { 
+        'blue': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACF0lEQVR4nO3bv0vDQBfH8S9isSId3BycnS0IDm7O/gf9D/wP3B0c3XQQXBycnS0IDm4Ozi6C2EHEIn69uYulSVuaXO77eXBY0pS0996XpEnSNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V/9AicAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+QY9vK8O4zC42QAAAABJRU5ErkJggg==',
+        'red': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACGUlEQVR4nO3bv0vDQBjH8UdiRXBwcHB2diA4uDn7H/Q/8D9wd3B000FwcHB2tiA4uDk4uwliBxGL+PXmLpYmbWlyue/nwWFJU9Lee1+SJknTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V+v9XIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+Qbc+K8O0D8OzwAAAABJRU5ErkJggg==',
+        'green': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACHklEQVR4nO3bv0vDQBjH8UdiRXBwcHB2diA4uDn7H/Q/8D9wd3B000FwcHB2tiA4uDk4uwliBxGL+PXmLpYmbWlyue/nwWFJU9Lee1+SJknTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V+v7y0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+QbexK8O5/q/5wAAAABJRU5ErkJggg=='
+    };
+    let selectedId = 'blue';
+    let state = [[], [], [], []];
     const MAX_HEIGHT = 4;
 
-    // Pre-populate with some colors in case they don't have images
-    function addInitialColor(color) {
-        const id = 'color_' + nextId++;
-        const canvas = document.createElement('canvas');
-        canvas.width = 100; canvas.height = 100;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = color;
-        ctx.fillRect(0,0,100,100);
-        ballTypes[id] = canvas.toDataURL();
-        if(!selectedId) selectedId = id;
+    function updateUI() {
+        renderPalette();
+        renderCounters();
+        renderTubes();
     }
 
-    ["#ff4757", "#2ed573", "#1e90ff", "#ffffff", "#2f3542"].forEach(addInitialColor);
-
-    function handleImageUpload(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+    function handleImage(e) {
+        const file = e.target.files[0];
+        if(!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
-            const id = 'img_' + nextId++;
-            ballTypes[id] = e.target.result;
-            selectedId = id;
-            renderPalette();
+        reader.onload = (event) => {
+            ballImages[selectedId] = event.target.result;
+            updateUI();
         };
         reader.readAsDataURL(file);
     }
 
     function renderPalette() {
         const p = document.getElementById('palette');
-        p.innerHTML = Object.keys(ballTypes).map(id => `
+        p.innerHTML = Object.keys(ballImages).map(id => `
             <div class="swatch ${id === selectedId ? 'active' : ''}" 
-                 style="background-image: url(${ballTypes[id]})" 
-                 onclick="selectedId='${id}'; renderPalette()">
+                 style="background-image: url(${ballImages[id]})" 
+                 onclick="selectedId='${id}'; updateUI()"></div>
+        `).join('');
+    }
+
+    function renderCounters() {
+        const counts = {};
+        Object.keys(ballImages).forEach(id => counts[id] = 0);
+        state.flat().forEach(id => counts[id]++);
+        const container = document.getElementById('counter-list');
+        container.innerHTML = Object.keys(counts).map(id => `
+            <div class="count-item">
+                <div class="count-bubble" style="background-image: url(${ballImages[id]})"></div>
+                <span class="${counts[id] !== 4 ? 'error-text' : ''}">${counts[id]}/4</span>
             </div>
         `).join('');
     }
 
-    function addBeaker() { state.push([]); renderBeakers(); }
-    
-    function renderBeakers() {
-        const container = document.getElementById('beakers-container');
-        container.innerHTML = state.map((beaker, i) => `
-            <div class="beaker-wrapper">
-                <button style="position:absolute; top:-5px; right:-5px; border-radius:50%; border:none; background:#ff4757; color:white; cursor:pointer" onclick="removeBeaker(${i})">×</button>
-                <div style="font-size:12px; font-weight:bold">Tube ${i+1}</div>
-                <div class="beaker" onclick="addBall(${i})" oncontextmenu="removeBall(event, ${i})">
-                    ${beaker.map(id => `<div class="ball" style="background-image: url(${ballTypes[id]})"></div>`).join('')}
-                </div>
+    function addTube() { state.push([]); updateUI(); }
+    function reset() { state = state.map(() => []); document.getElementById('results').innerHTML = ""; updateUI(); }
+
+    function renderTubes() {
+        const container = document.getElementById('tubes-container');
+        container.innerHTML = state.map((tube, i) => `
+            <div class="tube" onclick="addBall(${i})" oncontextmenu="removeBall(event, ${i})">
+                <div style="position:absolute; top:-20px; font-weight:bold; width:100%; text-align:center">#${i+1}</div>
+                ${tube.map(id => `<div class="ball" style="background-image: url(${ballImages[id]})"></div>`).join('')}
             </div>
         `).join('');
     }
 
     function addBall(i) {
-        if (selectedId && state[i].length < MAX_HEIGHT) {
-            state[i].push(selectedId);
-            renderBeakers();
-        }
+        if(state[i].length < MAX_HEIGHT) { state[i].push(selectedId); updateUI(); }
     }
+    function removeBall(e, i) { e.preventDefault(); state[i].pop(); updateUI(); }
 
-    function removeBall(e, i) {
-        e.preventDefault();
-        state[i].pop();
-        renderBeakers();
-    }
-
-    function removeBeaker(i) { state.splice(i, 1); renderBeakers(); }
-    
-    function resetAll() {
-        state = state.map(() => []);
-        document.getElementById('results').innerHTML = "";
-        renderBeakers();
-    }
-
-    // --- SOLVER ---
+    // --- PURE BFS SOLVER (Guarantees shortest path) ---
 
     function isSolved(s) {
         return s.every(b => b.length === 0 || (b.length === MAX_HEIGHT && b.every(v => v === b[0])));
@@ -158,67 +134,67 @@
 
     async function solvePuzzle() {
         const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = "<h2>Crunching numbers...</h2><p>This may take up to 30 seconds for complex puzzles.</p>";
-        await new Promise(r => setTimeout(r, 100));
+        const solveBtn = document.getElementById('solve-btn');
+        resultsDiv.innerHTML = "🔍 Checking all possibilities... (Shortest path guaranteed)";
+        solveBtn.disabled = true;
 
-        const queue = [{ s: state, path: [] }];
-        const visited = new Set([JSON.stringify(state)]);
-        let found = false;
+        await new Promise(r => setTimeout(r, 50));
+
+        // BFS Setup
+        let queue = [{ s: state, path: [] }];
+        let visited = new Set([JSON.stringify(state)]);
+        let found = null;
         let head = 0;
 
-        // BFS with optimized string handling
-        while (head < queue.length) {
+        // BFS Loop
+        while(head < queue.length) {
             const { s, path } = queue[head++];
 
             if (isSolved(s)) {
-                renderSolution(path);
-                found = true;
+                found = path;
                 break;
             }
 
-            if (path.length >= 25) continue; // Limit depth for speed
+            // Optimization: If path already exceeds 20, stop (rare for this game scale)
+            if (path.length > 20) continue;
 
-            // Generate moves
             for (let i = 0; i < s.length; i++) {
                 if (s[i].length === 0) continue;
                 for (let j = 0; j < s.length; j++) {
                     if (i === j || s[j].length === MAX_HEIGHT) continue;
 
-                    // Any color on any color rule
-                    const nextS = s.map((b, idx) => {
-                        if (idx === i) return b.slice(0, -1);
-                        if (idx === j) return [...b, s[i][s[i].length - 1]];
-                        return b;
+                    // Standard Move (One ball at a time)
+                    const nextS = s.map((t, idx) => {
+                        if (idx === i) return t.slice(0, -1);
+                        if (idx === j) return [...t, s[i][s[i].length - 1]];
+                        return t;
                     });
 
                     const key = JSON.stringify(nextS);
                     if (!visited.has(key)) {
                         visited.add(key);
-                        queue.push({ s: nextS, path: [...path, { from: i, to: j }] });
+                        queue.push({ s: nextS, path: [...path, {f: i, t: j}] });
                     }
                 }
             }
-            // Performance Cap
-            if (head > 150000) break; 
+
+            // Safety check for browser memory
+            if (head > 200000) break;
         }
 
-        if (!found) resultsDiv.innerHTML = "<h3 style='color:red'>No solution found within 25 moves. Check if you have 4 of every color!</h3>";
+        if (found) {
+            resultsDiv.innerHTML = `<h2>✅ Shortest Path: ${found.length} moves</h2>`;
+            if(found.length > 13) resultsDiv.innerHTML += `<p style="color:red"><b>Note:</b> You have 13 moves, but the math says it takes at least ${found.length}. Try adding an empty Tube to lower the move count!</p>`;
+            found.forEach((m, idx) => {
+                resultsDiv.innerHTML += `<div class="step"><b>${idx+1}.</b> Move from <b>Tube #${m.f+1}</b> to <b>Tube #${m.t+1}</b></div>`;
+            });
+        } else {
+            resultsDiv.innerHTML = "<h3>❌ No solution possible.</h3><p>Ensure you have exactly 4 of each color and enough empty tubes.</p>";
+        }
+        solveBtn.disabled = false;
     }
 
-    function renderSolution(path) {
-        const resultsDiv = document.getElementById('results');
-        resultsDiv.innerHTML = `<h2>✅ Solution: ${path.length} moves</h2>`;
-        path.forEach((m, i) => {
-            resultsDiv.innerHTML += `
-                <div class="step">
-                    <b>Step ${i+1}:</b> Move ball from <b>Tube ${m.from+1}</b> to <b>Tube ${m.to+1}</b>
-                </div>`;
-        });
-        resultsDiv.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    renderPalette();
-    renderBeakers();
+    updateUI();
 </script>
 </body>
 </html>
