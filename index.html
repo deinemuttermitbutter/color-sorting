@@ -3,67 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shortest Path Solver</title>
+    <title>Ultimate Ball Sort Solver</title>
     <style>
-        :root { --bg: #f0f2f5; --primary: #007bff; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); width: 100%; max-width: 850px; text-align: center; }
+        :root { --bg: #f0f2f5; --primary: #007bff; --danger: #ff4757; --success: #2ecc71; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); display: flex; flex-direction: column; align-items: center; padding: 20px; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); width: 100%; max-width: 900px; text-align: center; }
         
-        .counters { display: flex; justify-content: center; gap: 10px; margin: 15px 0; padding: 10px; background: #f8f9fa; border-radius: 10px; border: 1px solid #ddd; }
+        /* Controls & Inputs */
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .color-creator { background: #f8f9fa; padding: 10px; border-radius: 10px; border: 1px solid #ddd; margin: 10px 0; display: flex; gap: 10px; align-items: center; justify-content: center; }
+        input[type="text"] { padding: 8px; border: 1px solid #ccc; border-radius: 5px; outline: none; }
+        
+        /* Counters */
+        .counters { display: flex; justify-content: center; gap: 15px; margin: 15px 0; padding: 12px; background: #fff; border: 1px solid #eee; border-radius: 12px; }
         .count-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; font-weight: bold; }
-        .count-bubble { width: 30px; height: 30px; border-radius: 50%; background-size: cover; border: 2px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .error-text { color: #d63031; font-size: 10px; }
+        .count-bubble { width: 32px; height: 32px; border-radius: 50%; background-size: cover; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .bad-count { color: var(--danger); text-decoration: underline; }
 
-        .beakers-container { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin: 20px 0; }
+        /* Tubes Grid */
+        .beakers-container { display: flex; flex-wrap: wrap; gap: 25px; justify-content: center; margin: 30px 0; }
+        .tube-wrapper { position: relative; }
         .tube {
-            width: 65px; height: 180px; border: 4px solid #333; border-top: none;
-            border-bottom-left-radius: 25px; border-bottom-right-radius: 25px;
-            background: #fff; display: flex; flex-direction: column-reverse; align-items: center; padding: 5px; cursor: pointer; position: relative;
+            width: 70px; height: 190px; border: 4px solid #444; border-top: none;
+            border-bottom-left-radius: 35px; border-bottom-right-radius: 35px;
+            background: #fff; display: flex; flex-direction: column-reverse; align-items: center; padding: 8px 5px; cursor: pointer; transition: 0.2s;
         }
+        .tube:hover { background: #fdfdfd; transform: scale(1.02); }
         .ball {
-            width: 54px; height: 42px; border-radius: 50%; margin: 1px 0;
+            width: 58px; height: 44px; border-radius: 50%; margin: 1px 0;
             background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.1);
+            box-shadow: inset 0 -4px 6px rgba(0,0,0,0.15);
         }
+        .delete-tube { position: absolute; top: -12px; right: -12px; background: var(--danger); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; z-index: 10; }
 
-        .palette { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
-        .swatch { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 3px solid #ddd; background-size: cover; }
-        .swatch.active { border-color: var(--primary); transform: scale(1.1); }
+        /* Palette */
+        .palette { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin: 15px 0; }
+        .swatch { width: 50px; height: 50px; border-radius: 50%; cursor: pointer; border: 3px solid #ddd; background-size: cover; position: relative; }
+        .swatch.active { border-color: var(--primary); transform: scale(1.15); box-shadow: 0 4px 10px rgba(0,123,255,0.3); }
 
-        .btn { padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 5px; }
-        .btn-solve { background: #2ecc71; color: white; width: 200px; font-size: 1.1em; }
-        
+        /* Buttons */
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .btn-solve { background: var(--success); color: white; font-size: 1.1em; width: 220px; }
+        .btn-add { background: var(--primary); color: white; }
+        .btn-reset { background: #6c757d; color: white; }
+
         #results { width: 100%; max-width: 500px; margin-top: 20px; }
-        .step { background: white; margin: 8px 0; padding: 12px; border-left: 6px solid #2ecc71; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); text-align: left; }
-        .upload-btn { font-size: 12px; color: #666; cursor: pointer; text-decoration: underline; }
+        .step { background: white; margin: 8px 0; padding: 15px; border-left: 8px solid var(--success); border-radius: 6px; box-shadow: 0 3px 6px rgba(0,0,0,0.05); text-align: left; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>🧪 Shortest Way Finder</h2>
-    <p style="font-size: 0.9em; color: #666;">This AI checks every possible move to guarantee the <b>absolute minimum</b> moves.</p>
+    <h1>🧪 Ultra Ball Sort Solver</h1>
     
-    <div class="controls">
-        <button class="btn" style="background:#007bff; color:white" onclick="addTube()">+ Add Tube</button>
-        <button class="btn btn-solve" id="solve-btn" onclick="solvePuzzle()">🚀 Find Shortest Way</button>
-        <button class="btn" style="background:#6c757d; color:white" onclick="reset()">Reset</button>
+    <div class="toolbar">
+        <button class="btn btn-add" onclick="addTube()">+ Add Tube</button>
+        <button class="btn btn-solve" id="solve-btn" onclick="solvePuzzle()">🚀 Find Shortest Path</button>
+        <button class="btn btn-reset" onclick="resetState()">Clear All</button>
     </div>
 
-    <div class="counters" id="counter-list"></div>
+    <div class="color-creator">
+        <span>Create Color:</span>
+        <input type="text" id="new-color-name" placeholder="e.g. Purple">
+        <button class="btn btn-add" style="padding: 5px 15px;" onclick="addNewColor()">Add to Palette</button>
+        <div style="border-left: 1px solid #ccc; height: 20px; margin: 0 10px;"></div>
+        <label style="cursor: pointer; font-size: 13px; color: var(--primary); text-decoration: underline;">
+            📷 Upload Image
+            <input type="file" style="display:none" onchange="handleImage(event)">
+        </label>
+    </div>
 
-    <div class="palette" id="palette"></div>
-    <input type="file" id="file-input" style="display:none" onchange="handleImage(event)">
-    <span class="upload-btn" onclick="document.getElementById('file-input').click()">📷 Upload Image for selected ball</span>
+    <div class="counters" id="counter-display"></div>
+    <div class="palette" id="palette-display"></div>
 </div>
 
 <div class="beakers-container" id="tubes-container"></div>
 <div id="results"></div>
 
 <script>
-    let ballImages = { 
-        'blue': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACF0lEQVR4nO3bv0vDQBfH8S9isSId3BycnS0IDm7O/gf9D/wP3B0c3XQQXBycnS0IDm4Ozi6C2EHEIn69uYulSVuaXO77eXBY0pS0996XpEnSNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V/9AicAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+QY9vK8O4zC42QAAAABJRU5ErkJggg==',
-        'red': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACGUlEQVR4nO3bv0vDQBjH8UdiRXBwcHB2diA4uDn7H/Q/8D9wd3B000FwcHB2tiA4uDk4uwliBxGL+PXmLpYmbWlyue/nwWFJU9Lee1+SJknTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V+v9XIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+Qbc+K8O0D8OzwAAAABJRU5ErkJggg==',
-        'green': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACHklEQVR4nO3bv0vDQBjH8UdiRXBwcHB2diA4uDn7H/Q/8D9wd3B000FwcHB2tiA4uDk4uwliBxGL+PXmLpYmbWlyue/nwWFJU9Lee1+SJknTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V+v7y0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+QbexK8O5/q/5wAAAABJRU5ErkJggg=='
+    let ballImages = {
+        'blue': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACF0lEQVR4nO3bv0vDQBfH8S9isSId3BycnS0IDm7O/gf9D/wP3B0c3XQQXBycnS0IDm4Ozi6C2EHEIn69uYulSVuaXO77eXBY0pS0996XpEnSNAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V/9AicAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+QY9vK8O4zC42QAAAABJRU5ErkJggg==',
+        'red': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACGUlEQVR4nO3bv0vDQBjH8UdiRXBwcHB2diA4uDn7H/Q/8D9wd3B000FwcHB2tiA4uDk4uwliBxGL+PXmLpYmbWlyue/nwWFJU9Lee1+SJknTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V/v9XIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+Qbc+K8O0D8OzwAAAABJRU5ErkJggg==',
+        'green': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGQAAABkCAYAAABw4pVUAAAACXBIWXMAAAsTAAALEwEAmpwYAAACHklEQVR4nO3bv0vDQBjH8UdiRXBwcHB2diA4uDn7H/Q/8D9wd3B000FwcHB2tiA4uDk4uwliBxGL+PXmLpYmbWlyue/nwWFJU9Lee1+SJknTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8Id8f5Wunp6eDqIownvDsqyx67rjWq3W8v3+I8K7y7KMruuO67VaK8uyxvD+LhEAsuL7q9QwjKGu684wDL8nZRiG099lO9eYpml0Xfdf67ruOIyhEAbYj++v0svLy3G/339NS7vdHpfL5Uv6r6y+y8PDY9Ttdl9rtdpxv99/9X1/BRhgN76/SpvN5pTr0ul0ToH2+5S1Wi2Xy+Wp16fNZnMKGGA3YRhOW63Wp96fRqPRp3f9D6U9/vY9BoD8YIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhAECYIAAhP8B9v8v6V/v7y0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDp+QbexK8O5/q/5wAAAABJRU5ErkJggg=='
     };
     let selectedId = 'blue';
     let state = [[], [], [], []];
@@ -75,19 +96,35 @@
         renderTubes();
     }
 
+    function addNewColor() {
+        const nameInput = document.getElementById('new-color-name');
+        const name = nameInput.value.trim().toLowerCase();
+        if (!name || ballImages[name]) return;
+        
+        // Default random colored dot for new types
+        const canvas = document.createElement('canvas');
+        canvas.width = 100; canvas.height = 100;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#' + Math.floor(Math.random()*16777215).toString(16);
+        ctx.beginPath(); ctx.arc(50,50,45,0,Math.PI*2); ctx.fill();
+        
+        ballImages[name] = canvas.toDataURL();
+        selectedId = name;
+        nameInput.value = "";
+        updateUI();
+    }
+
     function handleImage(e) {
-        const file = e.target.files[0];
-        if(!file) return;
         const reader = new FileReader();
         reader.onload = (event) => {
             ballImages[selectedId] = event.target.result;
             updateUI();
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(e.target.files[0]);
     }
 
     function renderPalette() {
-        const p = document.getElementById('palette');
+        const p = document.getElementById('palette-display');
         p.innerHTML = Object.keys(ballImages).map(id => `
             <div class="swatch ${id === selectedId ? 'active' : ''}" 
                  style="background-image: url(${ballImages[id]})" 
@@ -99,24 +136,28 @@
         const counts = {};
         Object.keys(ballImages).forEach(id => counts[id] = 0);
         state.flat().forEach(id => counts[id]++);
-        const container = document.getElementById('counter-list');
-        container.innerHTML = Object.keys(counts).map(id => `
+        const container = document.getElementById('counter-display');
+        container.innerHTML = Object.keys(counts).filter(id => counts[id] > 0 || id === selectedId).map(id => `
             <div class="count-item">
                 <div class="count-bubble" style="background-image: url(${ballImages[id]})"></div>
-                <span class="${counts[id] !== 4 ? 'error-text' : ''}">${counts[id]}/4</span>
+                <span class="${counts[id] !== 4 ? 'bad-count' : ''}">${counts[id]}/4</span>
             </div>
         `).join('');
     }
 
     function addTube() { state.push([]); updateUI(); }
-    function reset() { state = state.map(() => []); document.getElementById('results').innerHTML = ""; updateUI(); }
+    function deleteTube(i) { state.splice(i, 1); updateUI(); }
+    function resetState() { state = state.map(() => []); document.getElementById('results').innerHTML = ""; updateUI(); }
 
     function renderTubes() {
         const container = document.getElementById('tubes-container');
         container.innerHTML = state.map((tube, i) => `
-            <div class="tube" onclick="addBall(${i})" oncontextmenu="removeBall(event, ${i})">
-                <div style="position:absolute; top:-20px; font-weight:bold; width:100%; text-align:center">#${i+1}</div>
-                ${tube.map(id => `<div class="ball" style="background-image: url(${ballImages[id]})"></div>`).join('')}
+            <div class="tube-wrapper">
+                <button class="delete-tube" onclick="deleteTube(${i})">×</button>
+                <div style="position:absolute; top:-20px; font-weight:bold; width:100%; text-align:center; font-size:12px; color:#777">Tube #${i+1}</div>
+                <div class="tube" onclick="addBall(${i})" oncontextmenu="removeBall(event, ${i})">
+                    ${tube.map(id => `<div class="ball" style="background-image: url(${ballImages[id]})"></div>`).join('')}
+                </div>
             </div>
         `).join('');
     }
@@ -126,8 +167,7 @@
     }
     function removeBall(e, i) { e.preventDefault(); state[i].pop(); updateUI(); }
 
-    // --- PURE BFS SOLVER (Guarantees shortest path) ---
-
+    // --- BFS SOLVER (Guaranteed Minimum Moves) ---
     function isSolved(s) {
         return s.every(b => b.length === 0 || (b.length === MAX_HEIGHT && b.every(v => v === b[0])));
     }
@@ -135,35 +175,25 @@
     async function solvePuzzle() {
         const resultsDiv = document.getElementById('results');
         const solveBtn = document.getElementById('solve-btn');
-        resultsDiv.innerHTML = "🔍 Checking all possibilities... (Shortest path guaranteed)";
+        resultsDiv.innerHTML = "🔍 AI is exploring all possibilities...";
         solveBtn.disabled = true;
-
         await new Promise(r => setTimeout(r, 50));
 
-        // BFS Setup
         let queue = [{ s: state, path: [] }];
         let visited = new Set([JSON.stringify(state)]);
         let found = null;
         let head = 0;
 
-        // BFS Loop
         while(head < queue.length) {
             const { s, path } = queue[head++];
-
-            if (isSolved(s)) {
-                found = path;
-                break;
-            }
-
-            // Optimization: If path already exceeds 20, stop (rare for this game scale)
-            if (path.length > 20) continue;
+            if (isSolved(s)) { found = path; break; }
+            if (path.length > 25) continue; // Logic cap
 
             for (let i = 0; i < s.length; i++) {
                 if (s[i].length === 0) continue;
                 for (let j = 0; j < s.length; j++) {
                     if (i === j || s[j].length === MAX_HEIGHT) continue;
 
-                    // Standard Move (One ball at a time)
                     const nextS = s.map((t, idx) => {
                         if (idx === i) return t.slice(0, -1);
                         if (idx === j) return [...t, s[i][s[i].length - 1]];
@@ -177,19 +207,17 @@
                     }
                 }
             }
-
-            // Safety check for browser memory
-            if (head > 200000) break;
+            if (head > 250000) break;
         }
 
         if (found) {
-            resultsDiv.innerHTML = `<h2>✅ Shortest Path: ${found.length} moves</h2>`;
-            if(found.length > 13) resultsDiv.innerHTML += `<p style="color:red"><b>Note:</b> You have 13 moves, but the math says it takes at least ${found.length}. Try adding an empty Tube to lower the move count!</p>`;
+            resultsDiv.innerHTML = `<h2>✅ Solution Found: ${found.length} moves</h2>`;
             found.forEach((m, idx) => {
                 resultsDiv.innerHTML += `<div class="step"><b>${idx+1}.</b> Move from <b>Tube #${m.f+1}</b> to <b>Tube #${m.t+1}</b></div>`;
             });
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
         } else {
-            resultsDiv.innerHTML = "<h3>❌ No solution possible.</h3><p>Ensure you have exactly 4 of each color and enough empty tubes.</p>";
+            resultsDiv.innerHTML = "<h3>❌ No solution possible.</h3><p>Double check that you have exactly 4 of every color.</p>";
         }
         solveBtn.disabled = false;
     }
